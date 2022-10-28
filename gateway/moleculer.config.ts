@@ -18,7 +18,7 @@ const brokerConfig: BrokerOptions = {
 	},
 	logLevel: "info",
 
-	transporter: null, // "NATS"
+	transporter: "nats://localhost:4222", // "NATS"
 
     cacher: null,
 
