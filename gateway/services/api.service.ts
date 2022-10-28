@@ -7,11 +7,12 @@ export default class ApiService extends Service {
 
 	public constructor(broker: ServiceBroker) {
 		super(broker);
+
 		this.parseServiceSchema({
 			name: "api",
 			mixins: [ApiGateway],
 			settings: {
-				port: process.env.PORT || 3000,
+				port: process.env.PORT || 3001,
 
 				ip: "0.0.0.0",
 
