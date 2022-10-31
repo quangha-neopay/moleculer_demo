@@ -1,9 +1,9 @@
-"use strict";
-import {BrokerOptions, Errors, MetricRegistry, ServiceBroker} from "moleculer";
+import { BrokerOptions, Errors, ServiceBroker } from "moleculer";
+import { bootstrap } from "./src/main";
 
 const brokerConfig: BrokerOptions = {
-	namespace: "gateway",
-	nodeID: "node-1",
+	namespace: process.env.NAMESPACE,
+	nodeID: process.env.NODE_ID,
 	metadata: {},
 
 	logger: {
@@ -18,9 +18,9 @@ const brokerConfig: BrokerOptions = {
 	},
 	logLevel: "info",
 
-	transporter: "nats://localhost:4222", // "NATS"
+	transporter: process.env.TRANSPORTER, // "NATS"
 
-    cacher: null,
+	cacher: null,
 
 	serializer: "JSON",
 
@@ -93,7 +93,9 @@ const brokerConfig: BrokerOptions = {
 	// started: async (broker: ServiceBroker): Promise<void> => {},
 	// stopped: async (broker: ServiceBroker): Promise<void> => {},
 
-
+	started: async (broker: ServiceBroker): Promise<void> => {
+		await bootstrap();
+	},
 };
 
 export = brokerConfig;
