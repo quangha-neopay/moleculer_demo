@@ -1,7 +1,7 @@
-import { Service, ServiceBroker } from "moleculer";
-import * as ApiGateway from "moleculer-web";
-import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+import { Service, ServiceBroker } from 'moleculer';
+import * as ApiGateway from 'moleculer-web';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
 
 export default class ApiService extends Service {
 	public constructor(broker: ServiceBroker) {
@@ -13,17 +13,47 @@ export default class ApiService extends Service {
 			mixins: [ApiGateway],
 
 			settings: {
-				path: "api",
-
 				port: process.env.PORT || 3000,
 
-				ip: "0.0.0.0",
+				ip: '0.0.0.0',
 
 				routes: [
 					{
-						path: "/",
+						path: '/api',
 
-						whitelist: ["user.*"],
+						whitelist: ['**'],
+
+						use: [],
+
+						mergeParams: true,
+
+						authentication: false,
+
+						authorization: true,
+
+						autoAliases: true,
+
+						callingOptions: {},
+
+						bodyParsers: {
+							json: {
+								strict: false,
+								limit: '1MB',
+							},
+							urlencoded: {
+								extended: true,
+								limit: '1MB',
+							},
+						},
+
+						mappingPolicy: 'all',
+
+						logging: true,
+					},
+					{
+						path: '/auth',
+
+						whitelist: ['user.register', 'user.login'],
 
 						use: [],
 
@@ -40,15 +70,15 @@ export default class ApiService extends Service {
 						bodyParsers: {
 							json: {
 								strict: false,
-								limit: "1MB",
+								limit: '1MB',
 							},
 							urlencoded: {
 								extended: true,
-								limit: "1MB",
+								limit: '1MB',
 							},
 						},
 
-						mappingPolicy: "all",
+						mappingPolicy: 'all',
 
 						logging: true,
 					},
@@ -58,24 +88,24 @@ export default class ApiService extends Service {
 				logRequestParams: null,
 				logResponseData: null,
 				assets: {
-					folder: "public",
+					folder: 'public',
 				},
 			},
 
 			methods: {
 				async authorize(ctx, route, req, res) {
-					const auth = req.headers["authorization"];
-					if (auth && auth.startsWith("Bearer")) {
+					const auth = req.headers['authorization'];
+					if (auth && auth.startsWith('Bearer')) {
 						const token = auth.slice(7);
 
-						const payload = await ctx.call("user.verifyToken", {
+						const payload = await ctx.call('user.verifyToken', {
 							token,
 						});
 
 						ctx.meta.user = payload;
 						return Promise.resolve(ctx);
 					} else {
-						return Promise.reject("No token");
+						return Promise.reject('Unauthorized');
 					}
 				},
 			},

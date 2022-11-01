@@ -3,19 +3,21 @@ import { InjectModel } from '@nestjs/mongoose';
 import { hash, compare } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
 import mongoose, { UpdateWriteOpResult } from 'mongoose';
+import { Role } from './constants/user-role';
 import { User } from './model/user.model';
 import { IUserRepo } from './user.repository';
 
 @Injectable()
 export class UserHandler implements IUserRepo {
 	constructor(
-		@InjectModel(User.name) public userModel: mongoose.Model<User>,
+		@InjectModel(User.name) private userModel: mongoose.Model<User>,
 	) {}
 
 	public async register(
 		username: string,
 		password: string,
 		fullName: string,
+		role?: Role,
 	): Promise<User | string> {
 		try {
 			const user = await this.userModel
@@ -32,6 +34,7 @@ export class UserHandler implements IUserRepo {
 				username,
 				password: hashedPassword,
 				fullName,
+				role,
 			});
 			await newUser.save();
 
@@ -69,13 +72,17 @@ export class UserHandler implements IUserRepo {
 	public async update(
 		userId: mongoose.Types.ObjectId,
 		fullName: string,
-	): Promise<UpdateWriteOpResult> {
+	): Promise<User | string> {
 		try {
-			const user = await this.getUserById(userId);
-
-			const updatedUser = await this.userModel.updateOne({
-				fullName,
-			});
+			const updatedUser = await this.userModel.findByIdAndUpdate(
+				{ _id: userId },
+				{
+					fullName,
+				},
+			);
+			if (!updatedUser) {
+				return 'User not found';
+			}
 
 			return updatedUser;
 		} catch (err) {
@@ -138,8 +145,14 @@ export class UserHandler implements IUserRepo {
 		}
 	}
 
-	public async getAllUsers(): Promise<User[]> {
+	public async getAllUsers(
+		_id: mongoose.Types.ObjectId,
+	): Promise<User[] | string> {
 		try {
+			const user = await this.userModel.findById({ _id });
+			if (user.role !== Role.ADMIN) {
+				return 'You are not admin';
+			}
 			const users = await this.userModel.find();
 
 			return users;

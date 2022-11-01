@@ -27,6 +27,7 @@ export default class UserService extends Service {
 						username: 'string',
 						password: { type: 'string', min: 6 },
 						fullName: 'string',
+						role: 'string',
 					},
 					handler: this.register,
 				},
@@ -87,11 +88,12 @@ export default class UserService extends Service {
 
 	// Action
 	public async register(ctx: any) {
-		const { username, password, fullName }: RegisterDto = ctx.params;
+		const { username, password, fullName, role }: RegisterDto = ctx.params;
 		const user = await this.userHandler.register(
 			username,
 			password,
 			fullName,
+			role,
 		);
 		return user;
 	}
@@ -135,7 +137,10 @@ export default class UserService extends Service {
 	}
 
 	public async getAllUsers(ctx: any) {
-		const users = await this.userHandler.getAllUsers();
+		const { _id } = ctx.meta.user;
+		const users = await this.userHandler.getAllUsers(
+			new mongoose.Types.ObjectId(_id),
+		);
 		return users;
 	}
 
