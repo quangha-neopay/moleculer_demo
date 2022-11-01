@@ -26,6 +26,7 @@ export default class UserService extends Service {
 					params: {
 						username: 'string',
 						password: { type: 'string', min: 6 },
+						fullName: 'string',
 					},
 					handler: this.register,
 				},

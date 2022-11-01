@@ -1,5 +1,7 @@
 import { Service, ServiceBroker } from "moleculer";
 import * as ApiGateway from "moleculer-web";
+import { NestFactory } from "@nestjs/core";
+import { AppModule } from "./app.module";
 
 export default class ApiService extends Service {
 	public constructor(broker: ServiceBroker) {
@@ -17,15 +19,15 @@ export default class ApiService extends Service {
 
 				ip: "0.0.0.0",
 
-				use: [],
-
 				routes: [
 					{
-						path: "/user",
+						path: "/",
 
 						whitelist: ["user.*"],
 
-						mergeParams: false,
+						use: [],
+
+						mergeParams: true,
 
 						authentication: false,
 
@@ -77,6 +79,12 @@ export default class ApiService extends Service {
 					}
 				},
 			},
+
+			started: this.bootstrap,
 		});
+	}
+
+	private async bootstrap() {
+		await NestFactory.create(AppModule);
 	}
 }

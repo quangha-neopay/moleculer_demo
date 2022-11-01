@@ -7,7 +7,7 @@ export interface IUserRepo {
 		username: string,
 		password: string,
 		fullName: string,
-	): Promise<User>;
+	): Promise<User | string>;
 	login(username: string, password: string): Promise<string>;
 	update(
 		userId: mongoose.Types.ObjectId,
@@ -19,7 +19,7 @@ export interface IUserRepo {
 		newPassword: string,
 	): Promise<string>;
 	// checkUserExist(userId: string): Promise<boolean>;
-	getUserById(userId: mongoose.Types.ObjectId): Promise<User>;
+	getUserById(userId: mongoose.Types.ObjectId): Promise<User | string>;
 	getAllUsers(): Promise<User[]>;
 	verifyToken(token: string): JwtPayload | string;
 }

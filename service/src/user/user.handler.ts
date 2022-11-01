@@ -1,9 +1,4 @@
-import {
-	Injectable,
-	InternalServerErrorException,
-	BadRequestException,
-	NotFoundException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash, compare } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
@@ -14,19 +9,21 @@ import { IUserRepo } from './user.repository';
 @Injectable()
 export class UserHandler implements IUserRepo {
 	constructor(
-		@InjectModel(User.name) public readonly userModel: mongoose.Model<User>,
+		@InjectModel(User.name) public userModel: mongoose.Model<User>,
 	) {}
 
 	public async register(
 		username: string,
 		password: string,
 		fullName: string,
-	): Promise<User> {
+	): Promise<User | string> {
 		try {
-			const user = await this.userModel.findOne({ username });
+			const user = await this.userModel
+				.findOne({ username })
+				.select('-password');
 
 			if (user) {
-				throw new BadRequestException('User already exist');
+				return 'User already exist';
 			}
 
 			const hashedPassword = await hash(password, 10);
@@ -53,7 +50,7 @@ export class UserHandler implements IUserRepo {
 			);
 
 			if (!user || !isMatchedPassword) {
-				throw new BadRequestException('Invalid username or password');
+				return 'Invalid username or password';
 			}
 
 			const { _id } = user;
@@ -77,7 +74,7 @@ export class UserHandler implements IUserRepo {
 			const user = await this.getUserById(userId);
 
 			const updatedUser = await this.userModel.updateOne({
-				fullName: user.fullName,
+				fullName,
 			});
 
 			return updatedUser;
@@ -92,14 +89,14 @@ export class UserHandler implements IUserRepo {
 		newPassword: string,
 	): Promise<string> {
 		try {
-			const user = await this.getUserById(userId);
+			const user = await this.userModel.findById(userId);
 			const isMatchedPassword = await this.checkPassword(
 				oldPassword,
 				user.password,
 			);
 
 			if (!user || !isMatchedPassword) {
-				throw new BadRequestException('Invalid username or password');
+				return 'Invalid username or password';
 			}
 
 			const hashedPassword = await hash(newPassword, 10);
@@ -123,14 +120,16 @@ export class UserHandler implements IUserRepo {
 	//     return isUserExist ? true : false;
 	// }
 
-	public async getUserById(userId: mongoose.Types.ObjectId): Promise<User> {
+	public async getUserById(
+		userId: mongoose.Types.ObjectId,
+	): Promise<User | string> {
 		try {
 			const user = await this.userModel
 				.findById({ _id: userId })
 				.select('-password -refreshToken');
 
 			if (!user) {
-				throw new NotFoundException('User not found.');
+				return 'User not found';
 			}
 
 			return user;

@@ -1,5 +1,4 @@
 import { BrokerOptions, Errors, ServiceBroker } from "moleculer";
-import { bootstrap } from "./src/main";
 
 const brokerConfig: BrokerOptions = {
 	namespace: process.env.NAMESPACE,
@@ -92,10 +91,6 @@ const brokerConfig: BrokerOptions = {
 	// created : (broker: ServiceBroker): void => {},
 	// started: async (broker: ServiceBroker): Promise<void> => {},
 	// stopped: async (broker: ServiceBroker): Promise<void> => {},
-
-	started: async (broker: ServiceBroker): Promise<void> => {
-		await bootstrap();
-	},
 };
 
 export = brokerConfig;
