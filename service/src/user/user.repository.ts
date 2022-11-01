@@ -1,4 +1,4 @@
-import mongoose, { UpdateWriteOpResult } from 'mongoose';
+import mongoose from 'mongoose';
 import { User } from './model/user.model';
 import { JwtPayload } from 'jsonwebtoken';
 import { Role } from './constants/user-role';

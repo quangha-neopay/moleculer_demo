@@ -2,7 +2,7 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash, compare } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
-import mongoose, { UpdateWriteOpResult } from 'mongoose';
+import mongoose from 'mongoose';
 import { Role } from './constants/user-role';
 import { User } from './model/user.model';
 import { IUserRepo } from './user.repository';
