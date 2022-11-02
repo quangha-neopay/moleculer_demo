@@ -17,11 +17,4 @@ export interface ITaskRepo {
 	): Promise<Task | string>;
 
 	getAllTasks(userId: mongoose.Types.ObjectId): Promise<Task[]>;
-
-	isManager(
-		taskId: mongoose.Types.ObjectId,
-		managerId: mongoose.Types.ObjectId,
-	): Promise<boolean>;
-
-	checkTaskExist(taskId: mongoose.Types.ObjectId): Promise<boolean>;
 }

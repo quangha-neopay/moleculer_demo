@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { TaskHandler } from '../src/task/task.handler';
 import { TaskModule } from '../src/task/task.module';
 import { CreateTaskDto } from '../src/task/dto/create-task.dto';
-import mongoose, { mongo } from 'mongoose';
+import mongoose from 'mongoose';
 import { UpdateTaskDto } from '../src/task/dto/update-task.dto';
 
 export default class TaskService extends Service {
@@ -17,9 +17,13 @@ export default class TaskService extends Service {
 
 			hooks: {
 				before: {
-					update: [this.checkTaskExistHook, this.isManager],
-					getTaskById: [this.checkTaskExistHook, this.isManager],
-					getAllTasks: [this.isManager],
+					create: [this.createTaskHook],
+					update: [this.checkTaskExistHook, this.isTaskManagerHook],
+					getTaskById: [
+						this.checkTaskExistHook,
+						this.isTaskManagerHook,
+					],
+					getAllTasks: [this.isTaskManagerHook],
 				},
 			},
 
@@ -61,6 +65,12 @@ export default class TaskService extends Service {
 					},
 					handler: this.getAllTasks,
 				},
+				checkTaskExist: {
+					handler: this.checkTaskExist,
+				},
+				isTaskManager: {
+					handler: this.isTaskManager,
+				},
 			},
 
 			started: this.bootstrap,
@@ -76,6 +86,13 @@ export default class TaskService extends Service {
 			new mongoose.Types.ObjectId(_id),
 		);
 		return result;
+	}
+
+	private async createTaskHook(ctx: any) {
+		const isAdmin = await ctx.call('user.isAdmin', ctx.meta.user);
+		if (!isAdmin) {
+			throw new Error('You are not admin');
+		}
 	}
 
 	public async getTaskById(ctx: any) {
@@ -96,18 +113,10 @@ export default class TaskService extends Service {
 		return result;
 	}
 
-	public async getAllTasks(ctx: any) {
-		const { _id } = ctx.meta.user;
-		const result = await this.taskHandler.getAllTasks(
-			new mongoose.Types.ObjectId(_id),
-		);
-		return result;
-	}
-
-	public async isManager(ctx: any) {
+	private async isTaskManagerHook(ctx: any) {
 		const { taskId } = ctx.params;
 		const { _id } = ctx.meta.user;
-		const result = await this.taskHandler.isManager(
+		const result = await this.taskHandler.isTaskManager(
 			new mongoose.Types.ObjectId(taskId),
 			new mongoose.Types.ObjectId(_id),
 		);
@@ -116,7 +125,7 @@ export default class TaskService extends Service {
 		}
 	}
 
-	public async checkTaskExistHook(ctx: any) {
+	private async checkTaskExistHook(ctx: any) {
 		const { taskId } = ctx.params;
 		const result = await this.taskHandler.checkTaskExist(
 			new mongoose.Types.ObjectId(taskId),
@@ -124,6 +133,32 @@ export default class TaskService extends Service {
 		if (!result) {
 			throw new Error('Task not found');
 		}
+	}
+
+	public async checkTaskExist(ctx: any) {
+		const { taskId } = ctx.params;
+		const result = await this.taskHandler.checkTaskExist(
+			new mongoose.Types.ObjectId(taskId),
+		);
+		return result;
+	}
+
+	public async isTaskManager(ctx: any) {
+		const { taskId } = ctx.params;
+		const { _id } = ctx.meta.user;
+		const result = await this.taskHandler.isTaskManager(
+			new mongoose.Types.ObjectId(taskId),
+			new mongoose.Types.ObjectId(_id),
+		);
+		return result;
+	}
+
+	public async getAllTasks(ctx: any) {
+		const { _id } = ctx.meta.user;
+		const result = await this.taskHandler.getAllTasks(
+			new mongoose.Types.ObjectId(_id),
+		);
+		return result;
 	}
 
 	async bootstrap() {

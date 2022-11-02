@@ -15,7 +15,12 @@ export default class UserService extends Service {
 		this.parseServiceSchema({
 			name: 'user',
 
-			hooks: {},
+			hooks: {
+				before: {
+					getAllUsers: [this.isAdminHook],
+					getOtherUserById: [this.isAdminHook],
+				},
+			},
 
 			actions: {
 				register: {
@@ -27,7 +32,6 @@ export default class UserService extends Service {
 						username: 'string',
 						password: { type: 'string', min: 6 },
 						fullName: 'string',
-						role: 'string',
 					},
 					handler: this.register,
 				},
@@ -70,6 +74,16 @@ export default class UserService extends Service {
 					},
 					handler: this.getUserById,
 				},
+				getOtherUserById: {
+					rest: {
+						method: 'GET',
+						path: '/get-user-by-id/:userId',
+					},
+					params: {
+						userId: 'string',
+					},
+					handler: this.getOtherUserById,
+				},
 				getAllUsers: {
 					rest: {
 						method: 'GET',
@@ -79,6 +93,12 @@ export default class UserService extends Service {
 				},
 				verifyToken: {
 					handler: this.verifyToken,
+				},
+				checkUserExist: {
+					handler: this.checkUserExist,
+				},
+				isAdmin: {
+					handler: this.isAdmin,
 				},
 			},
 
@@ -136,18 +156,50 @@ export default class UserService extends Service {
 		return user;
 	}
 
+	public async getOtherUserById(ctx: any) {
+		const { userId } = ctx.params;
+
+		const user = await this.userHandler.getOtherUserById(
+			new mongoose.Types.ObjectId(userId),
+		);
+		return user;
+	}
+
 	public async getAllUsers(ctx: any) {
+		const users = await this.userHandler.getAllUsers();
+		return users;
+	}
+
+	public async isAdminHook(ctx: any) {
 		const { _id } = ctx.meta.user;
-		const users = await this.userHandler.getAllUsers(
+		const result = await this.userHandler.isAdmin(
 			new mongoose.Types.ObjectId(_id),
 		);
-		return users;
+		if (!result) {
+			throw new Error('You are not admin');
+		}
 	}
 
 	public async verifyToken(ctx: any) {
 		const { token } = ctx.params;
 		const res = await this.userHandler.verifyToken(token);
 		return res;
+	}
+
+	public async checkUserExist(ctx: any) {
+		const { userId } = ctx.params;
+		const result = await this.userHandler.checkUserExist(
+			new mongoose.Types.ObjectId(userId),
+		);
+		return result;
+	}
+
+	public async isAdmin(ctx: any) {
+		const { _id } = ctx.meta.user;
+		const result = await this.userHandler.isAdmin(
+			new mongoose.Types.ObjectId(_id),
+		);
+		return result ? true : false;
 	}
 
 	async bootstrap() {

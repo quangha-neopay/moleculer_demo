@@ -20,8 +20,8 @@ export interface IUserRepo {
 		oldPassword: string,
 		newPassword: string,
 	): Promise<string>;
-	// checkUserExist(userId: string): Promise<boolean>;
 	getUserById(userId: mongoose.Types.ObjectId): Promise<User | string>;
-	getAllUsers(_id: mongoose.Types.ObjectId): Promise<User[] | string>;
+	getOtherUserById(userId: mongoose.Types.ObjectId): Promise<User | string>;
+	getAllUsers(): Promise<User[]>;
 	verifyToken(token: string): JwtPayload | string;
 }

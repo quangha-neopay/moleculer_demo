@@ -5,6 +5,7 @@ import {
 	UserTaskManagement,
 	UserTaskManagementSchema,
 } from './model/user-task-manament.model';
+import { UserTaskManagementHandler } from './user-task-management.handler';
 
 @Module({
 	imports: [
@@ -14,6 +15,6 @@ import {
 			{ name: UserTaskManagement.name, schema: UserTaskManagementSchema },
 		]),
 	],
-	providers: [],
+	providers: [UserTaskManagementHandler],
 })
-export class TaskManagerModule {}
+export class UserTaskManagementModule {}

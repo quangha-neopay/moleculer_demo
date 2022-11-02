@@ -1,6 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
+import { Role } from '../user/constants/user-role';
+import { User } from '../user/model/user.model';
 import { Task } from './model/task.model';
 import { ITaskRepo } from './task.repository';
 
@@ -19,13 +21,14 @@ export class TaskHandler implements ITaskRepo {
 			if (!name || !description || !managerId) {
 				return 'Fill out all the fields';
 			}
-			const newTtask = await this.taskModel.create({
+
+			const newTask = await this.taskModel.create({
 				name,
 				description,
 				managerId,
 			});
-			await newTtask.save();
-			return newTtask;
+			await newTask.save();
+			return newTask;
 		} catch (err) {
 			throw new InternalServerErrorException(err.messages);
 		}
@@ -76,7 +79,7 @@ export class TaskHandler implements ITaskRepo {
 		}
 	}
 
-	public async isManager(
+	public async isTaskManager(
 		taskId: mongoose.Types.ObjectId,
 		managerId: mongoose.Types.ObjectId,
 	): Promise<boolean> {
@@ -95,11 +98,8 @@ export class TaskHandler implements ITaskRepo {
 		taskId: mongoose.Types.ObjectId,
 	): Promise<boolean> {
 		try {
-			const check = await this.taskModel
-				.findOne({ _id: taskId })
-				.select('_id')
-				.lean();
-			return check ? true : false;
+			const isTaskExist = await this.taskModel.findOne({ _id: taskId });
+			return isTaskExist ? true : false;
 		} catch (err) {
 			throw new InternalServerErrorException(err.messages);
 		}

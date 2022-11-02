@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+	Injectable,
+	InternalServerErrorException,
+	BadRequestException,
+	HttpStatus,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { hash, compare } from 'bcryptjs';
 import { sign, verify, JwtPayload } from 'jsonwebtoken';
@@ -6,6 +11,7 @@ import mongoose from 'mongoose';
 import { Role } from './constants/user-role';
 import { User } from './model/user.model';
 import { IUserRepo } from './user.repository';
+const { MoleculerError } = require('moleculer').Errors;
 
 @Injectable()
 export class UserHandler implements IUserRepo {
@@ -22,7 +28,8 @@ export class UserHandler implements IUserRepo {
 		try {
 			const user = await this.userModel
 				.findOne({ username })
-				.select('-password');
+				.select('-password')
+				.lean();
 
 			if (user) {
 				return 'User already exist';
@@ -53,7 +60,11 @@ export class UserHandler implements IUserRepo {
 			);
 
 			if (!user || !isMatchedPassword) {
-				return 'Invalid username or password';
+				throw new MoleculerError(
+					'Invalid username or password',
+					404,
+					'BAD REQUEST',
+				);
 			}
 
 			const { _id } = user;
@@ -61,7 +72,9 @@ export class UserHandler implements IUserRepo {
 			const accessToken = sign(
 				{ _id, username },
 				process.env.SECRET_KEY,
-				{ expiresIn: '5h' },
+				{
+					expiresIn: '24h',
+				},
 			);
 			return accessToken;
 		} catch (err) {
@@ -78,6 +91,9 @@ export class UserHandler implements IUserRepo {
 				{ _id: userId },
 				{
 					fullName,
+				},
+				{
+					new: true,
 				},
 			);
 			if (!updatedUser) {
@@ -121,19 +137,22 @@ export class UserHandler implements IUserRepo {
 		}
 	}
 
-	// public async checkUserExist(userId: string): Promise<boolean> {
-	//     const isUserExist = await this.userModel.findOne({ _id: userId }).select("_id").lean();
+	public async checkUserExist(
+		userId: mongoose.Types.ObjectId,
+	): Promise<boolean> {
+		const isUserExist = await this.userModel
+			.findOne({ _id: userId })
+			.select('_id')
+			.lean();
 
-	//     return isUserExist ? true : false;
-	// }
+		return isUserExist ? true : false;
+	}
 
 	public async getUserById(
 		userId: mongoose.Types.ObjectId,
 	): Promise<User | string> {
 		try {
-			const user = await this.userModel
-				.findById({ _id: userId })
-				.select('-password -refreshToken');
+			const user = await this.userModel.findById({ _id: userId });
 
 			if (!user) {
 				return 'User not found';
@@ -145,15 +164,26 @@ export class UserHandler implements IUserRepo {
 		}
 	}
 
-	public async getAllUsers(
-		_id: mongoose.Types.ObjectId,
-	): Promise<User[] | string> {
+	public async getOtherUserById(
+		userId: mongoose.Types.ObjectId,
+	): Promise<string | User> {
 		try {
-			const user = await this.userModel.findById({ _id });
-			if (user.role !== Role.ADMIN) {
-				return 'You are not admin';
-			}
-			const users = await this.userModel.find();
+			const user = await this.userModel
+				.findById({ _id: userId })
+				.select('-password')
+				.lean();
+
+			return user;
+		} catch (err) {
+			throw new InternalServerErrorException(err.messages);
+		}
+	}
+
+	public async getAllUsers(): Promise<User[]> {
+		try {
+			const users = await this.userModel
+				.find()
+				.select('-password -__v -createdAt -updatedAt');
 
 			return users;
 		} catch (err) {
@@ -174,6 +204,15 @@ export class UserHandler implements IUserRepo {
 			const check = await compare(inputPassword, userPassword);
 
 			return check ? true : false;
+		} catch (err) {
+			throw new InternalServerErrorException(err.messages);
+		}
+	}
+
+	public async isAdmin(adminId: mongoose.Types.ObjectId): Promise<boolean> {
+		try {
+			const user = await this.userModel.findById({ _id: adminId });
+			return user.role === Role.ADMIN ? true : false;
 		} catch (err) {
 			throw new InternalServerErrorException(err.messages);
 		}
