@@ -26,6 +26,9 @@ export class UserHandler implements IUserRepo {
 		role?: Role,
 	): Promise<User | string> {
 		try {
+			if (!username || !password || !fullName) {
+				return 'Fill out all the fields';
+			}
 			const user = await this.userModel
 				.findOne({ username })
 				.select('-password')

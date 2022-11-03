@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 export default class UserTaskManagementService extends Service {
 	private userTaskManagementHandler: UserTaskManagementHandler;
 
-	public constructor(broker: ServiceBroker) {
+	constructor(broker: ServiceBroker) {
 		super(broker);
 
 		this.parseServiceSchema({
@@ -62,7 +62,7 @@ export default class UserTaskManagementService extends Service {
 		});
 	}
 
-	public async assignTask(ctx: any) {
+	private async assignTask(ctx: any) {
 		const { userId, taskId } = ctx.params;
 		const result = await this.userTaskManagementHandler.assignTask(
 			new mongoose.Types.ObjectId(taskId),
@@ -100,7 +100,7 @@ export default class UserTaskManagementService extends Service {
 		}
 	}
 
-	public async getTaskListByUserId(ctx: any) {
+	private async getTaskListByUserId(ctx: any) {
 		const { userId } = ctx.params;
 		const result = await this.userTaskManagementHandler.getTaskListByUserId(
 			new mongoose.Types.ObjectId(userId),
@@ -108,7 +108,7 @@ export default class UserTaskManagementService extends Service {
 		return result;
 	}
 
-	public async markTaskDone(ctx: any) {
+	private async markTaskDone(ctx: any) {
 		const { userTaskManagementId } = ctx.params;
 		const result = await this.userTaskManagementHandler.markTaskDone(
 			new mongoose.Types.ObjectId(userTaskManagementId),
@@ -116,7 +116,7 @@ export default class UserTaskManagementService extends Service {
 		return result;
 	}
 
-	public async isTaskOwnerHook(ctx: any) {
+	private async isTaskOwnerHook(ctx: any) {
 		const { userTaskManagementId } = ctx.params;
 		const { _id } = ctx.meta.user;
 		const result = await this.userTaskManagementHandler.isTaskOwner(
@@ -128,7 +128,7 @@ export default class UserTaskManagementService extends Service {
 		}
 	}
 
-	public async checkUserTaskManagementExist(ctx: any) {
+	private async checkUserTaskManagementExist(ctx: any) {
 		const { userTaskManagementId } = ctx.params;
 		const result =
 			await this.userTaskManagementHandler.checkUserTaskManagementExist(
@@ -139,7 +139,7 @@ export default class UserTaskManagementService extends Service {
 		}
 	}
 
-	async bootstrap() {
+	private async bootstrap() {
 		const app = await NestFactory.createApplicationContext(
 			UserTaskManagementModule,
 		);

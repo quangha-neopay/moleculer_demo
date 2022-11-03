@@ -9,7 +9,7 @@ import { UpdateTaskDto } from '../src/task/dto/update-task.dto';
 export default class TaskService extends Service {
 	private taskHandler: TaskHandler;
 
-	public constructor(broker: ServiceBroker) {
+	constructor(broker: ServiceBroker) {
 		super(broker);
 
 		this.parseServiceSchema({
@@ -77,7 +77,7 @@ export default class TaskService extends Service {
 		});
 	}
 
-	public async create(ctx: any) {
+	private async create(ctx: any) {
 		const { name, description }: CreateTaskDto = ctx.params;
 		const { _id } = ctx.meta.user;
 		const result = await this.taskHandler.create(
@@ -95,7 +95,7 @@ export default class TaskService extends Service {
 		}
 	}
 
-	public async getTaskById(ctx: any) {
+	private async getTaskById(ctx: any) {
 		const { id } = ctx.params;
 		const result = await this.taskHandler.getTaskById(
 			new mongoose.Types.ObjectId(id),
@@ -103,7 +103,7 @@ export default class TaskService extends Service {
 		return result;
 	}
 
-	public async update(ctx: any) {
+	private async update(ctx: any) {
 		const { taskId, name, description }: UpdateTaskDto = ctx.params;
 		const result = await this.taskHandler.update(
 			new mongoose.Types.ObjectId(taskId),
@@ -135,7 +135,7 @@ export default class TaskService extends Service {
 		}
 	}
 
-	public async checkTaskExist(ctx: any) {
+	private async checkTaskExist(ctx: any) {
 		const { taskId } = ctx.params;
 		const result = await this.taskHandler.checkTaskExist(
 			new mongoose.Types.ObjectId(taskId),
@@ -143,7 +143,7 @@ export default class TaskService extends Service {
 		return result;
 	}
 
-	public async isTaskManager(ctx: any) {
+	private async isTaskManager(ctx: any) {
 		const { taskId } = ctx.params;
 		const { _id } = ctx.meta.user;
 		const result = await this.taskHandler.isTaskManager(
@@ -153,7 +153,7 @@ export default class TaskService extends Service {
 		return result;
 	}
 
-	public async getAllTasks(ctx: any) {
+	private async getAllTasks(ctx: any) {
 		const { _id } = ctx.meta.user;
 		const result = await this.taskHandler.getAllTasks(
 			new mongoose.Types.ObjectId(_id),
@@ -161,7 +161,7 @@ export default class TaskService extends Service {
 		return result;
 	}
 
-	async bootstrap() {
+	private async bootstrap() {
 		const app = await NestFactory.createApplicationContext(TaskModule);
 		this.taskHandler = app.get(TaskHandler);
 	}

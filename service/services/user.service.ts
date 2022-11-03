@@ -9,7 +9,7 @@ import mongoose from 'mongoose';
 export default class UserService extends Service {
 	private userHandler: UserHandler;
 
-	public constructor(broker: ServiceBroker) {
+	constructor(broker: ServiceBroker) {
 		super(broker);
 
 		this.parseServiceSchema({
@@ -107,7 +107,7 @@ export default class UserService extends Service {
 	}
 
 	// Action
-	public async register(ctx: any) {
+	private async register(ctx: any) {
 		const { username, password, fullName, role }: RegisterDto = ctx.params;
 		const user = await this.userHandler.register(
 			username,
@@ -118,13 +118,13 @@ export default class UserService extends Service {
 		return user;
 	}
 
-	public async login(ctx: any) {
+	private async login(ctx: any) {
 		const { username, password }: LoginDto = ctx.params;
 		const user = await this.userHandler.login(username, password);
 		return user;
 	}
 
-	public async update(ctx: any) {
+	private async update(ctx: any) {
 		const { _id } = ctx.meta.user;
 		const { fullName } = ctx.params;
 
@@ -135,7 +135,7 @@ export default class UserService extends Service {
 		return user;
 	}
 
-	public async changePassword(ctx: any) {
+	private async changePassword(ctx: any) {
 		const { _id } = ctx.meta.user;
 		const { oldPassword, newPassword } = ctx.params;
 
@@ -147,7 +147,7 @@ export default class UserService extends Service {
 		return result;
 	}
 
-	public async getUserById(ctx: any) {
+	private async getUserById(ctx: any) {
 		const { _id } = ctx.meta.user;
 
 		const user = await this.userHandler.getUserById(
@@ -156,7 +156,7 @@ export default class UserService extends Service {
 		return user;
 	}
 
-	public async getOtherUserById(ctx: any) {
+	private async getOtherUserById(ctx: any) {
 		const { userId } = ctx.params;
 
 		const user = await this.userHandler.getOtherUserById(
@@ -165,12 +165,12 @@ export default class UserService extends Service {
 		return user;
 	}
 
-	public async getAllUsers(ctx: any) {
+	private async getAllUsers(ctx: any) {
 		const users = await this.userHandler.getAllUsers();
 		return users;
 	}
 
-	public async isAdminHook(ctx: any) {
+	private async isAdminHook(ctx: any) {
 		const { _id } = ctx.meta.user;
 		const result = await this.userHandler.isAdmin(
 			new mongoose.Types.ObjectId(_id),
@@ -180,13 +180,13 @@ export default class UserService extends Service {
 		}
 	}
 
-	public async verifyToken(ctx: any) {
+	private async verifyToken(ctx: any) {
 		const { token } = ctx.params;
 		const res = await this.userHandler.verifyToken(token);
 		return res;
 	}
 
-	public async checkUserExist(ctx: any) {
+	private async checkUserExist(ctx: any) {
 		const { userId } = ctx.params;
 		const result = await this.userHandler.checkUserExist(
 			new mongoose.Types.ObjectId(userId),
@@ -194,7 +194,7 @@ export default class UserService extends Service {
 		return result;
 	}
 
-	public async isAdmin(ctx: any) {
+	private async isAdmin(ctx: any) {
 		const { _id } = ctx.meta.user;
 		const result = await this.userHandler.isAdmin(
 			new mongoose.Types.ObjectId(_id),
@@ -202,7 +202,7 @@ export default class UserService extends Service {
 		return result ? true : false;
 	}
 
-	async bootstrap() {
+	private async bootstrap() {
 		const app = await NestFactory.createApplicationContext(UserModule);
 		this.userHandler = app.get(UserHandler);
 	}

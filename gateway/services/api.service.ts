@@ -23,8 +23,6 @@ export default class ApiService extends Service {
 
 						whitelist: ['**'],
 
-						use: [],
-
 						mergeParams: true,
 
 						authentication: false,
@@ -54,8 +52,6 @@ export default class ApiService extends Service {
 						path: '/auth',
 
 						whitelist: ['user.register', 'user.login'],
-
-						use: [],
 
 						mergeParams: true,
 
@@ -97,7 +93,7 @@ export default class ApiService extends Service {
 					const auth = req.headers['authorization'];
 					if (auth && auth.startsWith('Bearer')) {
 						const token = auth.slice(7);
-
+						console.log(ctx);
 						const payload = await ctx.call('user.verifyToken', {
 							token,
 						});
